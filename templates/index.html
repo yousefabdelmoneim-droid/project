@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['DM Sans', 'sans-serif'],
+            mono: ['DM Mono', 'monospace'],
+          },
+          colors: {
+            ink: {
+              50:  '#f4f4f0',
+              100: '#e8e8e1',
+              200: '#d0d0c3',
+              300: '#b0b09e',
+              400: '#8a8a76',
+              500: '#6e6e5a',
+              600: '#585847',
+              700: '#454538',
+              800: '#32322a',
+              900: '#1e1e18',
+              950: '#111110',
+            },
+            sage: {
+              50:  '#f2f7f2',
+              100: '#e0ece0',
+              200: '#c2d9c3',
+              300: '#96be98',
+              400: '#64a067',
+              500: '#438546',
+              600: '#336935',
+              700: '#29532b',
+              800: '#224324',
+              900: '#1c381e',
+            },
+            amber: {
+              50:  '#fffbeb',
+              100: '#fef3c7',
+              200: '#fde68a',
+              300: '#fcd34d',
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706',
+            },
+            rose: {
+              50:  '#fff1f2',
+              100: '#ffe4e6',
+              400: '#fb7185',
+              500: '#f43f5e',
+              600: '#e11d48',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'DM Sans', sans-serif; background-color: #f4f4f0; }
+    .card { background: #ffffff; border: 1px solid #e8e8e1; border-radius: 16px; }
+    .btn-primary {
+      background: #1e1e18; color: #f4f4f0;
+      padding: 0.75rem 1.25rem; border-radius: 10px;
+      font-weight: 600; font-size: 0.9rem; letter-spacing: 0.01em;
+      transition: all 0.15s ease; display: inline-flex; align-items: center; gap: 0.4rem;
+    }
+    .btn-primary:hover { background: #32322a; transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-secondary {
+      background: #f4f4f0; color: #1e1e18; border: 1px solid #d0d0c3;
+      padding: 0.6rem 1rem; border-radius: 8px;
+      font-weight: 500; font-size: 0.85rem;
+      transition: all 0.15s ease; display: inline-flex; align-items: center; gap: 0.35rem;
+    }
+    .btn-secondary:hover { background: #e8e8e1; }
+    .btn-danger {
+      background: #fff1f2; color: #e11d48; border: 1px solid #ffe4e6;
+      padding: 0.5rem 0.85rem; border-radius: 8px;
+      font-weight: 500; font-size: 0.8rem;
+      transition: all 0.15s ease;
+    }
+    .btn-danger:hover { background: #ffe4e6; }
+    .btn-quick {
+      background: #438546; color: #fff;
+      padding: 0.6rem 1rem; border-radius: 8px;
+      font-weight: 600; font-size: 0.85rem;
+      transition: all 0.15s ease; white-space: nowrap;
+    }
+    .btn-quick:hover { background: #336935; transform: translateY(-1px); }
+    .nav-link {
+      padding: 0.5rem 0.9rem; border-radius: 8px;
+      font-weight: 500; font-size: 0.875rem; color: #6e6e5a;
+      transition: all 0.15s ease;
+    }
+    .nav-link:hover { background: #e8e8e1; color: #1e1e18; }
+    .nav-link.active { background: #1e1e18; color: #f4f4f0; }
+    input, select {
+      background: #f4f4f0; border: 1.5px solid #d0d0c3; border-radius: 8px;
+      padding: 0.65rem 0.85rem; font-size: 0.9rem; color: #1e1e18;
+      width: 100%; outline: none; font-family: 'DM Sans', sans-serif;
+      transition: border-color 0.15s;
+    }
+    input:focus, select:focus { border-color: #1e1e18; background: #fff; }
+    label { font-weight: 500; font-size: 0.8rem; color: #6e6e5a; margin-bottom: 0.3rem; display: block; text-transform: uppercase; letter-spacing: 0.05em; }
+    .badge { display: inline-flex; align-items: center; padding: 0.2rem 0.6rem; border-radius: 99px; font-size: 0.75rem; font-weight: 600; }
+    .badge-green { background: #e0ece0; color: #29532b; }
+    .badge-amber { background: #fef3c7; color: #92400e; }
+    .badge-plan { background: #e8e8e1; color: #454538; }
+    .warning-card { background: linear-gradient(135deg, #fffbeb, #fff7d6); border: 1.5px solid #fde68a; border-radius: 12px; }
+    .pill-filter { padding: 0.4rem 0.9rem; border-radius: 99px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.15s; border: 1.5px solid #d0d0c3; color: #6e6e5a; background: white; }
+    .pill-filter.active, .pill-filter:hover { background: #1e1e18; color: #f4f4f0; border-color: #1e1e18; }
+    .flash-success { background: #e0ece0; border: 1px solid #c2d9c3; color: #29532b; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 500; }
+    .flash-error { background: #fff1f2; border: 1px solid #ffe4e6; color: #e11d48; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 500; }
+    .table-row:hover { background: #f4f4f0; }
+    .stat-num { font-size: 2rem; font-weight: 700; color: #1e1e18; line-height: 1; }
+    .stat-label { font-size: 0.75rem; color: #8a8a76; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; margin-top: 0.2rem; }
+    @media (max-width: 640px) {
+      .hide-mobile { display: none !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- ── Top Nav ── -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-ink-100">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 bg-ink-900 rounded-lg flex items-center justify-center">
+          <svg class="w-4 h-4 text-ink-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+          </svg>
+        </div>
+        <span class="font-bold text-ink-900 text-base tracking-tight">Lessons</span>
+      </div>
+      <nav class="flex items-center gap-1">
+        <a href="{{ url_for('index') }}" class="nav-link {% if view == 'dashboard' %}active{% endif %}">Dashboard</a>
+        <a href="{{ url_for('lessons_view') }}" class="nav-link {% if view == 'lessons' %}active{% endif %}">History</a>
+        <a href="{{ url_for('upcoming_view') }}" class="nav-link {% if view == 'upcoming' %}active{% endif %} hide-mobile">Upcoming</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-6 space-y-5">
+
+    <!-- ── Flash Messages ── -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="space-y-2">
+          {% for category, message in messages %}
+            <div class="flash-{{ category }} flex items-start gap-2">
+              {% if category == 'success' %}
+                <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              {% else %}
+                <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              {% endif %}
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- ══════════════════════════════ DASHBOARD ══════════════════════════════ -->
+    {% if view == 'dashboard' %}
+
+      <!-- Weekly warnings -->
+      {% set warned = students | selectattr('weekly_warning') | list %}
+      {% if warned %}
+        <div class="warning-card p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+            <span class="text-sm font-600 text-amber-700 font-semibold">Behind this week</span>
+          </div>
+          <div class="space-y-2">
+            {% for s in warned %}
+              <div class="flex items-center justify-between bg-white/70 rounded-lg px-3 py-2">
+                <span class="font-semibold text-ink-800 text-sm">{{ s.name }}</span>
+                <span class="text-xs text-amber-700 font-mono font-bold">{{ s.lessons_this_week }}/{{ s.weekly_plan }} this week</span>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Student cards -->
+      {% if students %}
+        <div class="space-y-3">
+          {% for student in students %}
+            <div class="card p-4">
+              <div class="flex items-start justify-between gap-3 mb-4">
+                <div>
+                  <h2 class="font-bold text-ink-900 text-lg leading-tight">{{ student.name }}</h2>
+                  <div class="flex items-center gap-2 mt-1">
+                    <span class="badge badge-plan">{{ student.weekly_plan }}×/week</span>
+                    {% if student.weekly_warning %}
+                      <span class="badge badge-amber">⚠ Behind</span>
+                    {% else %}
+                      <span class="badge badge-green">✓ On track</span>
+                    {% endif %}
+                  </div>
+                </div>
+                <!-- Quick Add -->
+                <form action="{{ url_for('quick_add_lesson', student_id=student.id) }}" method="POST" class="flex-shrink-0">
+                  <button type="submit" class="btn-quick">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                    Now
+                  </button>
+                </form>
+              </div>
+
+              <!-- Stats row -->
+              <div class="grid grid-cols-3 gap-3 mb-4">
+                <div class="bg-ink-50 rounded-xl p-3 text-center">
+                  <div class="stat-num">{{ student.lessons_this_week }}</div>
+                  <div class="stat-label">This week</div>
+                </div>
+                <div class="bg-ink-50 rounded-xl p-3 text-center">
+                  <div class="stat-num">{{ student.lessons_since_reset }}</div>
+                  <div class="stat-label">Since reset</div>
+                </div>
+                <div class="bg-ink-50 rounded-xl p-3 text-center">
+                  <div class="stat-num">{{ student.lessons | length }}</div>
+                  <div class="stat-label">All time</div>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex items-center gap-2 flex-wrap">
+                <form action="{{ url_for('reset_counter', student_id=student.id) }}" method="POST">
+                  <button type="submit" class="btn-secondary" onclick="return confirm('Reset the lesson counter for {{ student.name }}?')">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset counter
+                  </button>
+                </form>
+                <span class="text-xs text-ink-400 font-mono">
+                  reset {{ student.last_reset_date.strftime('%d %b') }}
+                </span>
+                <div class="ml-auto">
+                  <form action="{{ url_for('delete_student', student_id=student.id) }}" method="POST">
+                    <button type="submit" class="btn-danger" onclick="return confirm('Delete {{ student.name }} and ALL their lessons?')">
+                      Remove
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card p-10 text-center">
+          <div class="w-14 h-14 bg-ink-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg class="w-7 h-7 text-ink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <h3 class="font-semibold text-ink-700 mb-1">No students yet</h3>
+          <p class="text-sm text-ink-400">Add your first student below to get started.</p>
+        </div>
+      {% endif %}
+
+      <!-- Add Student Form -->
+      <div class="card p-4">
+        <h3 class="font-bold text-ink-900 mb-4 flex items-center gap-2">
+          <svg class="w-4 h-4 text-ink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+          Add Student
+        </h3>
+        <form action="{{ url_for('add_student') }}" method="POST" class="space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="name">Student name</label>
+              <input type="text" id="name" name="name" placeholder="e.g. Marco" required autocomplete="off" />
+            </div>
+            <div>
+              <label for="weekly_plan">Weekly plan</label>
+              <select id="weekly_plan" name="weekly_plan">
+                <option value="1">1 lesson/week</option>
+                <option value="2">2 lessons/week</option>
+              </select>
+            </div>
+          </div>
+          <div class="pt-1">
+            <button type="submit" class="btn-primary w-full justify-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+              Add Student
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Recent lessons this week -->
+      {% if recent_lessons %}
+        <div class="card overflow-hidden">
+          <div class="px-4 pt-4 pb-3 border-b border-ink-100 flex items-center justify-between">
+            <h3 class="font-bold text-ink-900 flex items-center gap-2">
+              <svg class="w-4 h-4 text-ink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              This week's lessons
+            </h3>
+            <a href="{{ url_for('lessons_view') }}?filter=week" class="text-xs text-ink-400 hover:text-ink-700 font-medium">View all →</a>
+          </div>
+          <div class="divide-y divide-ink-50">
+            {% for lesson in recent_lessons %}
+              <div class="table-row flex items-center justify-between px-4 py-2.5 gap-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 bg-ink-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span class="text-xs font-bold text-ink-600">{{ lesson.student.name[0].upper() }}</span>
+                  </div>
+                  <div>
+                    <div class="font-semibold text-ink-800 text-sm">{{ lesson.student.name }}</div>
+                    <div class="text-xs text-ink-400 font-mono">{{ lesson.date.strftime('%a, %d %b') }} · {{ lesson.time }}</div>
+                  </div>
+                </div>
+                <form action="{{ url_for('delete_lesson', lesson_id=lesson.id) }}" method="POST">
+                  <button type="submit" class="btn-danger text-xs py-1 px-2.5" onclick="return confirm('Remove this lesson?')">✕</button>
+                </form>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+    <!-- ══════════════════════════════ LESSONS HISTORY ══════════════════════════════ -->
+    {% elif view == 'lessons' %}
+
+      <div class="flex items-center justify-between gap-3 flex-wrap">
+        <h1 class="font-bold text-ink-900 text-xl">Lesson History</h1>
+      </div>
+
+      <!-- Add Lesson Form -->
+      <div class="card p-4">
+        <h3 class="font-bold text-ink-900 mb-4 flex items-center gap-2">
+          <svg class="w-4 h-4 text-ink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Log a Lesson
+        </h3>
+        {% if students %}
+          <form action="{{ url_for('add_lesson') }}" method="POST" class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div class="col-span-2 sm:col-span-1">
+                <label for="l_student">Student</label>
+                <select id="l_student" name="student_id" required>
+                  {% for s in students %}
+                    <option value="{{ s.id }}">{{ s.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div>
+                <label for="l_date">Date</label>
+                <input type="date" id="l_date" name="date" value="{{ today.strftime('%Y-%m-%d') }}" required />
+              </div>
+              <div>
+                <label for="l_time">Time</label>
+                <input type="time" id="l_time" name="time" value="{{ now_time }}" required />
+              </div>
+            </div>
+            <button type="submit" class="btn-primary w-full justify-center">
+              Log Lesson
+            </button>
+          </form>
+        {% else %}
+          <p class="text-sm text-ink-400 text-center py-2">Add a student on the Dashboard first.</p>
+        {% endif %}
+      </div>
+
+      <!-- Filters -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <a href="{{ url_for('lessons_view') }}?filter=all&student={{ student_filter }}" class="pill-filter {% if filter_mode == 'all' %}active{% endif %}">All time</a>
+        <a href="{{ url_for('lessons_view') }}?filter=week&student={{ student_filter }}" class="pill-filter {% if filter_mode == 'week' %}active{% endif %}">This week</a>
+        <div class="ml-auto">
+          <select onchange="location.href='{{ url_for('lessons_view') }}?filter={{ filter_mode }}&student=' + this.value"
+                  style="width:auto; padding: 0.4rem 0.75rem; font-size: 0.8rem;">
+            <option value="all" {% if student_filter == 'all' %}selected{% endif %}>All students</option>
+            {% for s in students %}
+              <option value="{{ s.id }}" {% if student_filter == s.id|string %}selected{% endif %}>{{ s.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <!-- Lessons table -->
+      {% if lessons %}
+        <div class="card overflow-hidden">
+          <div class="divide-y divide-ink-50">
+            {% for lesson in lessons %}
+              <div class="table-row flex items-center justify-between px-4 py-3 gap-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 bg-ink-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <span class="text-sm font-bold text-ink-600">{{ lesson.student.name[0].upper() }}</span>
+                  </div>
+                  <div>
+                    <div class="font-semibold text-ink-800 text-sm">{{ lesson.student.name }}</div>
+                    <div class="text-xs text-ink-400 font-mono">
+                      {{ lesson.date.strftime('%A, %d %b %Y') }} · {{ lesson.time }}
+                    </div>
+                  </div>
+                </div>
+                <form action="{{ url_for('delete_lesson', lesson_id=lesson.id) }}" method="POST">
+                  <button type="submit" class="btn-danger" onclick="return confirm('Remove this lesson?')">✕</button>
+                </form>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        <p class="text-xs text-center text-ink-400">{{ lessons | length }} lesson{{ 's' if lessons | length != 1 }}</p>
+      {% else %}
+        <div class="card p-10 text-center">
+          <p class="text-sm text-ink-400">No lessons found for the selected filters.</p>
+        </div>
+      {% endif %}
+
+    <!-- ══════════════════════════════ UPCOMING ══════════════════════════════ -->
+    {% elif view == 'upcoming' %}
+
+      <div class="flex items-center justify-between gap-3 flex-wrap">
+        <h1 class="font-bold text-ink-900 text-xl">Upcoming Schedule</h1>
+      </div>
+
+      <!-- Schedule a future lesson -->
+      <div class="card p-4">
+        <h3 class="font-bold text-ink-900 mb-4 flex items-center gap-2">
+          <svg class="w-4 h-4 text-ink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          Schedule a Lesson
+        </h3>
+        {% if students %}
+          <form action="{{ url_for('add_lesson') }}" method="POST" class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div class="col-span-2 sm:col-span-1">
+                <label for="u_student">Student</label>
+                <select id="u_student" name="student_id" required>
+                  {% for s in students %}
+                    <option value="{{ s.id }}">{{ s.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div>
+                <label for="u_date">Date</label>
+                <input type="date" id="u_date" name="date" value="{{ today.strftime('%Y-%m-%d') }}" required />
+              </div>
+              <div>
+                <label for="u_time">Time</label>
+                <input type="time" id="u_time" name="time" value="{{ now_time }}" required />
+              </div>
+            </div>
+            <button type="submit" class="btn-primary w-full justify-center">
+              Schedule Lesson
+            </button>
+          </form>
+        {% else %}
+          <p class="text-sm text-ink-400 text-center py-2">Add a student on the Dashboard first.</p>
+        {% endif %}
+      </div>
+
+      <!-- Mobile link to upcoming (hidden in nav) -->
+      <div class="sm:hidden flex gap-2 -mt-1">
+        <!-- already on page -->
+      </div>
+
+      <!-- Upcoming list -->
+      {% if upcoming %}
+        {% set current_date = namespace(val=None) %}
+        <div class="card overflow-hidden">
+          {% for lesson in upcoming %}
+            {% if lesson.date != current_date.val %}
+              {% set current_date.val = lesson.date %}
+              <div class="px-4 py-2 bg-ink-50 border-b border-ink-100">
+                <span class="text-xs font-bold text-ink-500 uppercase tracking-widest">
+                  {% if lesson.date == today %}
+                    Today · {{ lesson.date.strftime('%d %b %Y') }}
+                  {% elif lesson.date == today + today.__class__.resolution %}
+                    Tomorrow · {{ lesson.date.strftime('%d %b %Y') }}
+                  {% else %}
+                    {{ lesson.date.strftime('%A, %d %b %Y') }}
+                  {% endif %}
+                </span>
+              </div>
+            {% endif %}
+            <div class="table-row flex items-center justify-between px-4 py-3 gap-3 border-b border-ink-50">
+              <div class="flex items-center gap-3">
+                <div class="text-center flex-shrink-0">
+                  <div class="font-mono text-sm font-bold text-ink-700">{{ lesson.time }}</div>
+                </div>
+                <div class="w-px h-6 bg-ink-200"></div>
+                <div class="w-8 h-8 bg-sage-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span class="text-xs font-bold text-sage-700">{{ lesson.student.name[0].upper() }}</span>
+                </div>
+                <span class="font-semibold text-ink-800 text-sm">{{ lesson.student.name }}</span>
+              </div>
+              <form action="{{ url_for('delete_lesson', lesson_id=lesson.id) }}" method="POST">
+                <button type="submit" class="btn-danger" onclick="return confirm('Remove this lesson?')">✕</button>
+              </form>
+            </div>
+          {% endfor %}
+        </div>
+        <p class="text-xs text-center text-ink-400">{{ upcoming | length }} upcoming lesson{{ 's' if upcoming | length != 1 }}</p>
+      {% else %}
+        <div class="card p-10 text-center">
+          <div class="w-12 h-12 bg-ink-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+            <svg class="w-6 h-6 text-ink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <p class="text-sm text-ink-400">No upcoming lessons scheduled.</p>
+        </div>
+      {% endif %}
+
+    {% endif %}
+
+  </main>
+
+  <!-- Mobile bottom nav for Upcoming -->
+  <div class="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-ink-100 flex z-40">
+    <a href="{{ url_for('index') }}" class="flex-1 flex flex-col items-center py-3 gap-0.5 {% if view == 'dashboard' %}text-ink-900{% else %}text-ink-400{% endif %}">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="{% if view == 'dashboard' %}2.5{% else %}2{% endif %}" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      <span class="text-[10px] font-semibold">Home</span>
+    </a>
+    <a href="{{ url_for('lessons_view') }}" class="flex-1 flex flex-col items-center py-3 gap-0.5 {% if view == 'lessons' %}text-ink-900{% else %}text-ink-400{% endif %}">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="{% if view == 'lessons' %}2.5{% else %}2{% endif %}" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      <span class="text-[10px] font-semibold">History</span>
+    </a>
+    <a href="{{ url_for('upcoming_view') }}" class="flex-1 flex flex-col items-center py-3 gap-0.5 {% if view == 'upcoming' %}text-ink-900{% else %}text-ink-400{% endif %}">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="{% if view == 'upcoming' %}2.5{% else %}2{% endif %}" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+      <span class="text-[10px] font-semibold">Upcoming</span>
+    </a>
+  </div>
+  <div class="sm:hidden h-16"></div><!-- bottom nav spacer -->
+
+</body>
+</html>
